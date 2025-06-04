@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [videoUrl, setVideoUrl] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Submitted URL:', videoUrl);
+    //send to backend here
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
+      <h1>YouTube Video Notes Extractor</h1>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="url">YouTube URL:</label>
+        <input
+          id="url"
+          type="text"
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=..."
+          style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
+        />
+        <button type="submit" style={{ marginTop: '1rem' }}>
+          Get Notes
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      </form>
+    </div>
+  );
 }
 
-export default App
+export default App;
