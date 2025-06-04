@@ -7,6 +7,18 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
+// POST endpoint to handle transcript requests
+app.post('/api/transcript', (req, res) => {
+  const { videoUrl } = req.body;
+
+  // TEMP: just echo back the URL for now
+  res.json({
+    videoUrl,
+    transcript: 'This is a mock transcript for now.',
+    summary: 'This is a placeholder summary.'
+  });
+});
+
 app.get('/', (req, res) => {
   res.send('API is running');
 });

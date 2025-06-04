@@ -3,11 +3,25 @@ import { useState } from 'react';
 function App() {
   const [videoUrl, setVideoUrl] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Submitted URL:', videoUrl);
-    //send to backend here
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log('Submitted URL:', videoUrl);
+
+  try {
+    const response = await fetch('http://localhost:3001/api/transcript', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ videoUrl }),
+    });
+
+    const data = await response.json();
+    console.log('Transcript Data:', data);
+    // You can now set state to display this info on the page if desired
+    } catch (err) {
+      console.error('Error fetching transcript:', err);
+    }
   };
+
 
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
