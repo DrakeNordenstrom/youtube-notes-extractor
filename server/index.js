@@ -1,23 +1,56 @@
-//basic backend setup
 const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = 3001;
 
+const { YoutubeTranscript } = require('youtube-transcript'); //import from lib
+
 app.use(cors());
 app.use(express.json());
 
 // POST endpoint to handle transcript requests
-app.post('/api/transcript', (req, res) => {
+// sends back transcript string
+app.post('/api/transcript', async (req, res) => {
   const { videoUrl } = req.body;
+  console.log('Received URL:', videoUrl); // prints full vid URL
 
-  // TEMP: just echo back the URL for now
-  res.json({
-    videoUrl,
-    transcript: 'This is a mock transcript for now.',
-    summary: 'This is a placeholder summary.'
-  });
+  try {
+    const videoId = extractVideoId(videoUrl);
+    if (!videoId) {
+      return res.status(400).json({ error: 'Invalid YouTube URL' });
+    }
+
+    console.log('Video ID:', videoId);
+
+    //method from lib
+    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+
+    const fullTranscript = transcriptArray.map(line => line.text).join(' ');
+
+    res.json({
+      videoUrl,
+      transcript: fullTranscript,
+      summary: 'Summary soon' // placeholder
+    });
+  } catch (err) {
+    console.error('Transcript error:', err);
+    res.status(500).json({ error: 'Failed to fetch transcript' });
+  }
 });
+
+// extract video ID from YouTube URL
+function extractVideoId(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('youtube.com')) {
+      return parsed.searchParams.get('v');
+    } else if (parsed.hostname === 'youtu.be') {
+      return parsed.pathname.substring(1);
+    }
+  } catch (e) {
+    return null;
+  }
+}
 
 app.get('/', (req, res) => {
   res.send('API is running');
@@ -25,27 +58,4 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-});
-
-//connects backend to python script
-const { exec } = require('child_process');
-const path = require('path');
-
-app.post('/api/transcript', (req, res) => {
-  const videoId = req.body.videoId;
-  const scriptPath = path.join(__dirname, '..', 'python', 'fetch_transcript.py');
-
-  exec(`python "${scriptPath}" "${videoId}"`, (err, stdout, stderr) => {
-    if (err || stderr) {
-      console.error('Exec error:', err || stderr);
-      return res.status(500).json({ error: 'Error fetching transcript' });
-    }
-
-    try {
-      const output = JSON.parse(stdout);
-      res.json(output);
-    } catch (parseErr) {
-      res.status(500).json({ error: 'Error parsing transcript output' });
-    }
-  });
 });

@@ -16,7 +16,7 @@ function App() {
 
     const data = await response.json();
     console.log('Transcript Data:', data);
-    // You can now set state to display this info on the page if desired
+    
     } catch (err) {
       console.error('Error fetching transcript:', err);
     }

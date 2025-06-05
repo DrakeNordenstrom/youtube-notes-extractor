@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "youtube-transcript": "^1.2.1",
+    "youtube-transcript-api": "^2.0.4"
   }
 }
