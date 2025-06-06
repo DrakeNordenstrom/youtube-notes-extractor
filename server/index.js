@@ -8,7 +8,31 @@ const { YoutubeTranscript } = require('youtube-transcript'); //import from lib
 app.use(cors());
 app.use(express.json());
 
-// POST endpoint to handle transcript requests
+//helper function, scraper used seems to just randomly fail so loop until transcript is good
+async function fetchTranscriptWithRetry(videoId, maxRetries = 20, delayMs = 1000) {
+  let attempts = 0;
+  while (attempts < maxRetries) {
+    try {
+      const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+
+      //validate transcriptArray
+      if (Array.isArray(transcriptArray) && transcriptArray.length > 0) {
+        return transcriptArray;
+      } else {
+        console.warn(`Attempt ${attempts + 1}: Empty transcript returned`);
+      }
+    } catch (err) {
+      console.warn(`Attempt ${attempts + 1} failed: ${err.message}`);
+    }
+    
+    attempts++;
+    // wait before retrying
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  throw new Error(`Failed to fetch transcript after ${maxRetries} attempts.`);
+}
+
+//POST endpoint to handle transcript requests
 // sends back transcript string
 app.post('/api/transcript', async (req, res) => {
   const { videoUrl } = req.body;
@@ -22,15 +46,16 @@ app.post('/api/transcript', async (req, res) => {
 
     console.log('Video ID:', videoId);
 
-    //method from lib
-    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+    //retry helper to fetch transcript
+    const transcriptArray = await fetchTranscriptWithRetry(videoId);
 
     const fullTranscript = transcriptArray.map(line => line.text).join(' ');
+    const cleanedTranscript = fullTranscript.replace(/&amp;#39;/g, "'");
 
     res.json({
       videoUrl,
-      transcript: fullTranscript,
-      summary: 'Summary soon' // placeholder
+      transcript: cleanedTranscript || "Transcript unavailable",
+      summary: 'Summary soon' || "Summary unavailable" // placeholder
     });
   } catch (err) {
     console.error('Transcript error:', err);
