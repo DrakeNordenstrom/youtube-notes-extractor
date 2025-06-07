@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import jsPDF from 'jspdf';
 
 function App() {
   const [videoUrl, setVideoUrl] = useState('');
   const [transcript, setTranscript] = useState('');
-  const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -12,7 +12,6 @@ function App() {
     setLoading(true);
     setError('');
     setTranscript('');
-    setSummary('');
 
     try {
       const response = await fetch('http://localhost:3001/api/transcript', {
@@ -28,12 +27,30 @@ function App() {
       }
 
       setTranscript(data.transcript);
-      setSummary(data.summary); // Currently placeholder
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text('YouTube URL and Full Transcript', 12, 22);
+
+    doc.setFontSize(12);
+    doc.text(`Video URL: ${videoUrl}`, 12, 32);
+
+    doc.setFontSize(16);
+    doc.text('Transcript:', 12, 44);
+
+    const splitTranscript = doc.splitTextToSize(transcript || 'Transcript unavailable', 180);
+    doc.setFontSize(12);
+    doc.text(splitTranscript, 12, 54);
+
+    doc.save('youtube-transcript.pdf');
   };
 
   return (
@@ -57,17 +74,16 @@ function App() {
       {error && <div style={{ color: 'red' }}>{error}</div>}
 
       {transcript && (
-        <div>
+        <div style={{ textAlign: 'left', marginBottom: '1rem' }}>
           <h2>Transcript</h2>
-          <p style={{ textAlign: 'left', whiteSpace: 'pre-wrap' }}>{transcript}</p>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{transcript}</p>
         </div>
       )}
 
-      {summary && (
-        <div>
-          <h2>Summary</h2>
-          <p style={{ textAlign: 'left' }}>{summary}</p>
-        </div>
+      {transcript && (
+        <button onClick={exportToPDF} style={{ marginTop: '1rem' }}>
+          Export Transcript as PDF
+        </button>
       )}
     </div>
   );
