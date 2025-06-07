@@ -54,8 +54,7 @@ app.post('/api/transcript', async (req, res) => {
 
     res.json({
       videoUrl,
-      transcript: cleanedTranscript || "Transcript unavailable",
-      summary: 'Summary soon' || "Summary unavailable" // placeholder
+      transcript: cleanedTranscript || "Transcript unavailable"
     });
   } catch (err) {
     console.error('Transcript error:', err);
