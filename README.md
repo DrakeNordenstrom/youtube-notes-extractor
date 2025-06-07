@@ -3,7 +3,7 @@
 A simple full-stack app for tracking job applications, built with:
 
 -  React + Vite (frontend)
--  Express.js (backend)
+-  Node.js (backend)
 
 ## Features
 
@@ -15,7 +15,7 @@ youtube-notes-extractor/
 
 - client/ # React frontend
 
-- server/ # Express backend
+- server/ # Node backend
 
 - python/ #script/library for extracting transcript
 
